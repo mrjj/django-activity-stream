@@ -3,7 +3,8 @@ Activity Stream Documentation
 
 :Authors:
    Justin Quick <justquick@gmail.com> and many others listed in AUTHORS.txt
-:Version: 0.4.4
+   mrjj fork
+:Version: 0.4.4-mrjj
 
 
 ::
