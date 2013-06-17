@@ -74,7 +74,9 @@ class Action(models.Model):
     actor_object_id = models.CharField(max_length=255)
     actor = generic.GenericForeignKey('actor_content_type', 'actor_object_id')
 
-    verb = models.CharField(max_length=255)
+    # verb = models.CharField(max_length=255)
+
+    verb = models.CharField(max_length=255, choices=actstream_settings.VERB_CHOICES, )
     description = models.TextField(blank=True, null=True)
 
     target_content_type = models.ForeignKey(ContentType, related_name='target',
@@ -90,7 +92,7 @@ class Action(models.Model):
     action_object = generic.GenericForeignKey('action_object_content_type',
         'action_object_object_id')
 
-    timestamp = models.DateTimeField(default=now)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     public = models.BooleanField(default=True)
 
@@ -184,7 +186,6 @@ def setup_generic_relations():
 
 
 setup_generic_relations()
-
 
 if actstream_settings.USE_JSONFIELD:
     try:

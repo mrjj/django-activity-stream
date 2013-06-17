@@ -1,19 +1,21 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
         # Adding model 'Follow'
         db.create_table('actstream_follow', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
-            ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('object_id', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('actor_only', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('started', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
         ))
         db.send_create_signal('actstream', ['Follow'])
 
@@ -24,21 +26,21 @@ class Migration(SchemaMigration):
         db.create_table('actstream_action', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('actor_content_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='actor', to=orm['contenttypes.ContentType'])),
-            ('actor_object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('actor_object_id', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('verb', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('target_content_type', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='target', null=True, to=orm['contenttypes.ContentType'])),
-            ('target_object_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
+            ('target_object_id', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('action_object_content_type', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='action_object', null=True, to=orm['contenttypes.ContentType'])),
-            ('action_object_object_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
-            ('timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('action_object_object_id', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('timestamp', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('public', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('data', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
         ))
         db.send_create_signal('actstream', ['Action'])
 
 
     def backwards(self, orm):
-        
         # Removing unique constraint on 'Follow', fields ['user', 'content_type', 'object_id']
         db.delete_unique('actstream_follow', ['user_id', 'content_type_id', 'object_id'])
 
@@ -51,24 +53,27 @@ class Migration(SchemaMigration):
 
     models = {
         'actstream.action': {
-            'Meta': {'object_name': 'Action'},
+            'Meta': {'ordering': "('-timestamp',)", 'object_name': 'Action'},
             'action_object_content_type': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'action_object'", 'null': 'True', 'to': "orm['contenttypes.ContentType']"}),
-            'action_object_object_id': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'action_object_object_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'actor_content_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'actor'", 'to': "orm['contenttypes.ContentType']"}),
-            'actor_object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'actor_object_id': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'public': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'target_content_type': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'target'", 'null': 'True', 'to': "orm['contenttypes.ContentType']"}),
-            'target_object_id': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'target_object_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'timestamp': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'verb': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'actstream.follow': {
             'Meta': {'unique_together': "(('user', 'content_type', 'object_id'),)", 'object_name': 'Follow'},
+            'actor_only': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'object_id': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'started': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
         'auth.group': {
